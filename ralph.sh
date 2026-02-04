@@ -7,7 +7,7 @@ set -e
 # Parse arguments
 MAX_ITERATIONS=10
 
-while [[ $# -gt 0 ]];
+while [[ $# -gt 0 ]]; do
   case $1 in
     *)
       # Assume it's max_iterations if it's a number
