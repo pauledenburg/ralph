@@ -53,6 +53,7 @@ fi
 
 # Track current branch
 if [ -f "$PRD_FILE" ]; then
+  CURRENT_DESCRIPTION=$(jq -r '.description // empty' "$PRD_FILE" 2>/dev/null || echo "")
   CURRENT_BRANCH=$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")
   if [ -n "$CURRENT_BRANCH" ]; then
     echo "$CURRENT_BRANCH" > "$LAST_BRANCH_FILE"
@@ -66,12 +67,12 @@ if [ ! -f "$PROGRESS_FILE" ]; then
   echo "---" >> "$PROGRESS_FILE"
 fi
 
-echo "Starting Ralph - Tool: Claude Code- Max iterations: $MAX_ITERATIONS"
+echo "Starting Ralph - Tool: Claude Code- Max iterations: $MAX_ITERATIONS - ${CURRENT_DESCRIPTION}"
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
   echo "==============================================================="
-  echo "  Ralph Iteration $i of $MAX_ITERATIONS (Claude)"
+  echo "  Ralph Iteration $i of $MAX_ITERATIONS (Claude) - ${CURRENT_DESCRIPTION}"
   echo "==============================================================="
 
   # Run the selected tool with the ralph prompt

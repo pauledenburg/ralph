@@ -77,6 +77,11 @@ Only update CLAUDE.md if you have **genuinely reusable knowledge** that would he
 - Keep changes focused and minimal
 - Follow existing code patterns
 
+## Testing (If Available)
+
+For any story that contains verifyable changes, verify it works by having tests in the testing tools the project uses
+(e.g., unit tests, integration tests, end-to-end tests).
+ 
 ## Browser Testing (If Available)
 
 For any story that changes UI, verify it works in the browser if you have browser testing tools configured (e.g., via MCP):
