@@ -9,7 +9,12 @@ You are an autonomous coding agent working on a software project.
 3. Check you're on the correct branch from PRD `branchName`. If not, check it out or create from main.
 4. Pick the **highest priority** user story where `passes: false`
 5. Implement that single user story
-6. Run quality checks (e.g., typecheck, lint, test - use whatever your project requires)
+6. Run quality checks
+   1. ./dev rector --fix
+   2. ./dev lint --fix
+   3. ./dev analyse
+   4. ./dev pest --parallel
+   5. ./dev playwright-no-server
 7. Update CLAUDE.md files if you discover reusable patterns (see below)
 8. If checks pass, commit ALL changes with message: `feat: [Story ID] - [Story Title]`
 9. Update the PRD to set `passes: true` for the completed story
@@ -19,7 +24,7 @@ You are an autonomous coding agent working on a software project.
 
 APPEND to progress.txt (never replace, always append):
 ```
-## [Date/Time] - [Story ID]
+## [Date/Time] - [Story ID]: [Story Description]
 - What was implemented
 - Files changed
 - **Learnings for future iterations:**
@@ -81,7 +86,7 @@ Only update CLAUDE.md if you have **genuinely reusable knowledge** that would he
 
 For any story that contains verifyable changes, verify it works by having tests in the testing tools the project uses
 (e.g., unit tests, integration tests, end-to-end tests).
- 
+
 ## Browser Testing (If Available)
 
 For any story that changes UI, verify it works in the browser if you have browser testing tools configured (e.g., via MCP):

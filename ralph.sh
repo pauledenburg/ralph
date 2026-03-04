@@ -20,30 +20,31 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Validate tool choice
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-PRD_FILE="$SCRIPT_DIR/prd.json"
-PROGRESS_FILE="$SCRIPT_DIR/progress.txt"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)" # this is the directory of the script, e.g. scripts/ralph
+TASKS_DIR="$(cd ${SCRIPT_DIR}/tasks && pwd)"
+PRD_FILE="$TASKS_DIR/prd.json"
+PROGRESS_FILE="$TASKS_DIR/progress.txt"
 ARCHIVE_DIR="$SCRIPT_DIR/archive"
-LAST_BRANCH_FILE="$SCRIPT_DIR/.last-branch"
+LAST_BRANCH_FILE="$TASKS_DIR/.last-branch"
 
 # Archive previous run if branch changed
 if [ -f "$PRD_FILE" ] && [ -f "$LAST_BRANCH_FILE" ]; then
   CURRENT_BRANCH=$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")
   LAST_BRANCH=$(cat "$LAST_BRANCH_FILE" 2>/dev/null || echo "")
-  
+
   if [ -n "$CURRENT_BRANCH" ] && [ -n "$LAST_BRANCH" ] && [ "$CURRENT_BRANCH" != "$LAST_BRANCH" ]; then
     # Archive the previous run
     DATE=$(date +%Y-%m-%d)
     # Strip "ralph/" prefix from branch name for folder
     FOLDER_NAME=$(echo "$LAST_BRANCH" | sed 's|^ralph/||')
     ARCHIVE_FOLDER="$ARCHIVE_DIR/$DATE-$FOLDER_NAME"
-    
+
     echo "Archiving previous run: $LAST_BRANCH"
     mkdir -p "$ARCHIVE_FOLDER"
     [ -f "$PRD_FILE" ] && cp "$PRD_FILE" "$ARCHIVE_FOLDER/"
     [ -f "$PROGRESS_FILE" ] && cp "$PROGRESS_FILE" "$ARCHIVE_FOLDER/"
     echo "   Archived to: $ARCHIVE_FOLDER"
-    
+
     # Reset progress file for new run
     echo "# Ralph Progress Log" > "$PROGRESS_FILE"
     echo "Started: $(date)" >> "$PROGRESS_FILE"
@@ -53,7 +54,7 @@ fi
 
 # Track current branch
 if [ -f "$PRD_FILE" ]; then
-  CURRENT_DESCRIPTION=$(jq -r '.description // empty' "$PRD_FILE" 2>/dev/null || echo "")
+  CURRENT_DESCRIPTION=$(jq -r '[.userStories[] | select(.passes != true)] | sort_by(.priority) | first | .title // empty' "$PRD_FILE" 2>/dev/null || echo "")
   CURRENT_BRANCH=$(jq -r '.branchName // empty' "$PRD_FILE" 2>/dev/null || echo "")
   if [ -n "$CURRENT_BRANCH" ]; then
     echo "$CURRENT_BRANCH" > "$LAST_BRANCH_FILE"
@@ -71,6 +72,8 @@ echo "Starting Ralph - Tool: Claude Code- Max iterations: $MAX_ITERATIONS - ${CU
 
 for i in $(seq 1 $MAX_ITERATIONS); do
   echo ""
+  # Re-read current story each iteration (previous story may have been completed)
+  CURRENT_DESCRIPTION=$(jq -r '[.userStories[] | select(.passes != true)] | sort_by(.priority) | first | .title // empty' "$PRD_FILE" 2>/dev/null || echo "")
   echo "==============================================================="
   echo "  Ralph Iteration $i of $MAX_ITERATIONS (Claude) - ${CURRENT_DESCRIPTION}"
   echo "==============================================================="
@@ -86,7 +89,7 @@ for i in $(seq 1 $MAX_ITERATIONS); do
     echo "Completed at iteration $i of $MAX_ITERATIONS"
     exit 0
   fi
-  
+
   echo "Iteration $i complete. Continuing..."
   sleep 2
 done
